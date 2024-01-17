@@ -49,7 +49,7 @@ STANDDINGS_DF_COLUMN_CONFIG = {
         label="RW",
         help="Regulation Wins",
     ),
-    "wins_ot": st.column_config.NumberColumn(
+    "wins_reg_ot": st.column_config.NumberColumn(
         label="ROW",
         help="Regulation plus Overtime Wins",
     ),
