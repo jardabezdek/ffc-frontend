@@ -15,6 +15,11 @@ import streamlit as st
 from st_files_connection import FilesConnection
 
 from utils.style import style_page
+from utils.time import (
+    convert_utc_to_user_timezone,
+    get_user_timezone,
+    remove_whitespace_from_st_javascript,
+)
 
 DATA_PATH_SCORES = "frozen-facts-center-prod/fact_scores.parquet"
 ALL_TEAMS_OPTION = "All teams"
@@ -40,9 +45,10 @@ def main() -> None:
     None
     """
     style_page(file_path=Path(__file__))
+    user_timezone = get_user_timezone()
 
     # read data
-    df = read_data()
+    df = read_data(user_timezone=user_timezone)
 
     # write info message
     st.write(
@@ -62,17 +68,38 @@ def main() -> None:
         ]
 
     display_scores(df=df)
+    remove_whitespace_from_st_javascript()
 
 
-def read_data() -> tuple[pd.DataFrame]:
-    """Read data from an S3 bucket using Streamlit's connection.
+def read_data(user_timezone: str) -> tuple[pd.DataFrame]:
+    """Read data from an S3 bucket and preprocess it based on user timezone.
+
+    Parameters:
+    -----------
+    user_timezone : str
+        The user's timezone in IANA Time Zone Database format (e.g., "America/New_York").
 
     Returns:
     --------
     pd.DataFrame
     """
     conn = st.connection("s3", type=FilesConnection)
-    return conn.read(path=DATA_PATH_SCORES, input_format="parquet", ttl=600)
+    df = conn.read(path=DATA_PATH_SCORES, input_format="parquet", ttl=600)
+
+    # convert game start times from UTC into user timezone
+    for col_name, date_format in (
+        ("start_date_user_tz", "%Y-%m-%d"),
+        ("start_time_user_tz", "%H:%M"),
+    ):
+        df[col_name] = df.start_time_utc.apply(
+            lambda date_utc: convert_utc_to_user_timezone(
+                date_utc=date_utc,
+                user_timezone=user_timezone,
+                date_format=date_format,
+            )
+        )
+
+    return df
 
 
 def display_scores(df: pd.DataFrame) -> None:
@@ -90,11 +117,11 @@ def display_scores(df: pd.DataFrame) -> None:
     --------
     None
     """
-    for date in df.date.unique():
+    for date in df.start_date_user_tz.unique():
         # display subheader with date
         st.subheader(body=datetime.strptime(date, "%Y-%m-%d").strftime("%-d %b %Y"), divider="grey")
 
-        for _, row in df.loc[df.date == date].iterrows():
+        for _, row in df.loc[df.start_date_user_tz == date].iterrows():
             did_home_team_win = row.home_team_score > row.away_team_score
 
             st.markdown(
@@ -104,35 +131,31 @@ def display_scores(df: pd.DataFrame) -> None:
                     div[data-testid="column"]:nth-of-type(2) {text-align: right;} 
                     div[data-testid="column"]:nth-of-type(3) {text-align: center;} 
                     div[data-testid="column"]:nth-of-type(4) {text-align: left;} 
-                    div[data-testid="column"]:nth-of-type(5) {text-align: left;} 
+                    div[data-testid="column"]:nth-of-type(5) {text-align: right;} 
                 </style>
                 """,
                 unsafe_allow_html=True,
             )
 
-            column_layout = [5, 1, 1, 1, 5]
-            col1, col2, col3, col4, col5 = st.columns(spec=column_layout)
+            column_layout = [1, 5, 1, 5, 1]
+            _, col2, col3, col4, col5 = st.columns(spec=column_layout)
 
-            with col1:
+            with col2:
                 display_team_name_and_logo(
                     row=row, team_type=TeamType.HOME.value, did_home_team_win=did_home_team_win
                 )
-
-            with col2:
-                if row.period_type in ["OT", "SO"] and did_home_team_win:
-                    st.markdown(body=f"({row.period_type})")
 
             with col3:
                 st.markdown(body=f"**{row.home_team_score}-{row.away_team_score}**")
 
             with col4:
-                if row.period_type in ["OT", "SO"] and not did_home_team_win:
-                    st.markdown(body=f"({row.period_type})")
-
-            with col5:
                 display_team_name_and_logo(
                     row=row, team_type=TeamType.AWAY.value, did_home_team_win=did_home_team_win
                 )
+
+            with col5:
+                if row.period_type in ["OT", "SO"]:
+                    st.markdown(body=f"({row.period_type})")
 
         st.markdown("####")
 

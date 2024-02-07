@@ -12,3 +12,8 @@ icon = "📋"
 path = "sidebar_pages/scores.py"
 name = "Scores"
 icon = "🎯"
+
+[[pages]]
+path = "sidebar_pages/schedule.py"
+name = "Schedule"
+icon = "🗓️"
