@@ -127,7 +127,7 @@ def display_scores(df: pd.DataFrame) -> None:
             st.markdown(
                 body="""
                 <style>
-                    div[data-testid="column"]:nth-of-type(1) {text-align: right;} 
+                    div[data-testid="column"]:nth-of-type(1) {text-align: left;} 
                     div[data-testid="column"]:nth-of-type(2) {text-align: right;} 
                     div[data-testid="column"]:nth-of-type(3) {text-align: center;} 
                     div[data-testid="column"]:nth-of-type(4) {text-align: left;} 
@@ -138,7 +138,10 @@ def display_scores(df: pd.DataFrame) -> None:
             )
 
             column_layout = [1, 5, 1, 5, 1]
-            _, col2, col3, col4, col5 = st.columns(spec=column_layout)
+            col1, col2, col3, col4, _ = st.columns(spec=column_layout)
+
+            with col1:
+                st.markdown(body=row.period_type)
 
             with col2:
                 display_team_name_and_logo(
@@ -152,10 +155,6 @@ def display_scores(df: pd.DataFrame) -> None:
                 display_team_name_and_logo(
                     row=row, team_type=TeamType.AWAY.value, did_home_team_win=did_home_team_win
                 )
-
-            with col5:
-                if row.period_type in ["OT", "SO"]:
-                    st.markdown(body=f"({row.period_type})")
 
         st.markdown("####")
 
