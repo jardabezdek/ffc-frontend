@@ -99,6 +99,11 @@ def read_data(user_timezone: str) -> tuple[pd.DataFrame]:
             )
         )
 
+    # sort data frame by user timezone date and time
+    df = df.sort_values(
+        by=["start_date_user_tz", "start_time_user_tz"], ascending=[False, True]
+    ).reset_index(drop=True)
+
     return df
 
 
