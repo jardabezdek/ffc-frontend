@@ -43,7 +43,6 @@ STANDDINGS_DF_COLUMN_CONFIG = {
     "points_pct": st.column_config.NumberColumn(
         label="P%",
         help="Points Percentage",
-        format="%0.3f",
     ),
     "wins_reg": st.column_config.NumberColumn(
         label="RW",
@@ -82,6 +81,18 @@ STANDDINGS_DF_COLUMN_CONFIG = {
         help="Record in last ten games",
     ),
 }
+INTEGER_COLUMNS = [
+    "games_played",
+    "wins",
+    "losses",
+    "ots",
+    "points",
+    "wins_reg",
+    "wins_reg_ot",
+    "goals_for",
+    "goals_against",
+    "goals_diff",
+]
 
 
 def style_page(file_path: Path) -> None:
@@ -141,7 +152,17 @@ def style_standings_df(df: pd.DataFrame) -> None:
 
     # style data
     st.dataframe(
-        data=df,
+        data=(
+            df.style
+            # set background color of points column
+            .map(lambda _: "background-color: #f5f5f7;", subset=["points"])
+            # set text color of goals difference column
+            .map(lambda x: "color: red;" if x < 0 else "color: green;", subset=["goals_diff"])
+            # set precision of points pct column
+            .format(precision=3, subset=["points_pct"])
+            # set precision of all integer columns
+            .format(precision=0, subset=INTEGER_COLUMNS)
+        ),
         column_order=STANDDINGS_DF_COLUMN_CONFIG.keys(),
         column_config=STANDDINGS_DF_COLUMN_CONFIG,
         # display dataframe in full (35 pixel is row height, 3 pixels is borders height)
