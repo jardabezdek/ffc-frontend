@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from st_files_connection import FilesConnection
+
 from utils.style import style_page, style_standings_df
 
 DATA_PATH_STANDINGS_REGULAR = "frozen-facts-center-prod/fact_standings_regular.parquet"
@@ -132,10 +133,10 @@ def create_playoff_tab_content(df: pd.DataFrame) -> None:
 
 
 def render_matchup_headline(df: pd.DataFrame) -> None:
-    """Render a matchup headline in a Streamlit app based on the final match scores.
+    """Render a matchup headline in a Streamlit app based on the match scores.
 
     This function takes a DataFrame containing playoff series information, extracts
-    the final match scores, and renders a stylized matchup headline in a Streamlit app.
+    the match scores, and renders a stylized matchup headline in a Streamlit app.
     The headline includes team logos, names, and the final score.
 
     Parameters:
@@ -149,13 +150,13 @@ def render_matchup_headline(df: pd.DataFrame) -> None:
         This function renders the matchup headline in a Streamlit app.
     """
     (
-        matchup_win_team,
-        matchup_loss_team,
-        matchup_win_team_score,
-        matchup_loss_team_score,
-        matchup_win_team_logo_url,
-        matchup_loss_team_logo_url,
-    ) = extract_final_match_score(df=df)
+        higher_seed_team,
+        lower_seed_team,
+        higher_seed_team_score,
+        lower_seed_team_score,
+        higher_seed_team_logo_url,
+        lower_seed_team_logo_url,
+    ) = extract_last_match_score(df=df)
 
     # center all the columns content
     st.markdown(
@@ -181,21 +182,22 @@ def render_matchup_headline(df: pd.DataFrame) -> None:
         st.markdown(body=f"**{name}**")
 
     with col2:
-        render_logo_and_name(name=matchup_win_team, logo_url=matchup_win_team_logo_url)
+        render_logo_and_name(name=higher_seed_team, logo_url=higher_seed_team_logo_url)
 
     with col3:
-        st.markdown(body=f"### {matchup_win_team_score}-{matchup_loss_team_score}")
+        st.markdown(body=f"### {higher_seed_team_score}-{lower_seed_team_score}")
 
     with col4:
-        render_logo_and_name(name=matchup_loss_team, logo_url=matchup_loss_team_logo_url)
+        render_logo_and_name(name=lower_seed_team, logo_url=lower_seed_team_logo_url)
 
 
-def extract_final_match_score(df: pd.DataFrame) -> tuple[str, str, int, int, str, str]:
-    """Extract final match scores from the DataFrame representing a playoff series.
+def extract_last_match_score(df: pd.DataFrame) -> tuple[str, str, int, int, str, str]:
+    """Extract last match scores from the DataFrame representing a playoff series.
 
-    This function takes a DataFrame containing playoff series information and extracts the final
-    match scores, winning and losing team names. It returns a tuple containing the winning team
-    name, losing team name, winning team score, and losing team score.
+    This function takes a DataFrame containing playoff series information and extracts the last
+    match scores and team names. It returns a tuple containing the higher seed team name, lower
+    seed team name, higher seed team score, lower seed team score, higher seed team logo, and lower
+    seed team logo.
 
     Parameters:
     -----------
@@ -205,8 +207,8 @@ def extract_final_match_score(df: pd.DataFrame) -> tuple[str, str, int, int, str
     Returns:
     --------
     tuple[str, str, int, int, str, str]
-        A tuple containing the winning team name, losing team name, winning team score,
-        losing team score, winning team logo, and losing team logo.
+        A tuple containing the higher seed team name, lower seed team name, higher seed team score,
+        lower seed team score, higher seed team logo, and lower seed team logo.
     """
     cols = [
         "home_team_full_name",
@@ -215,21 +217,19 @@ def extract_final_match_score(df: pd.DataFrame) -> tuple[str, str, int, int, str
         "away_team_match_score",
         "home_team_logo_url",
         "away_team_logo_url",
+        "match",
     ]
 
     # extract values from the last match of the series
-    home_team, away_team, home_team_score, away_team_score, home_logo, away_logo = (
+    home_team, away_team, home_team_score, away_team_score, home_logo, away_logo, match = (
         df.tail(1).loc[:, cols].values[0]
     )
 
-    return (
-        home_team if home_team_score == 4 else away_team,
-        away_team if home_team_score == 4 else home_team,
-        home_team_score if home_team_score == 4 else away_team_score,
-        away_team_score if home_team_score == 4 else home_team_score,
-        home_logo if home_team_score == 4 else away_logo,
-        away_logo if home_team_score == 4 else home_logo,
-    )
+    # distinguish between higher seed team and lower seed team
+    if match in (1, 2, 5, 7):
+        return home_team, away_team, home_team_score, away_team_score, home_logo, away_logo
+
+    return away_team, home_team, away_team_score, home_team_score, away_logo, home_logo
 
 
 def render_matchup_matches(df: pd.DataFrame) -> None:
