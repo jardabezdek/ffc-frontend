@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from st_files_connection import FilesConnection
+from streamlit_theme import st_theme
 
 from utils.style import style_page, style_standings_df
 
@@ -41,6 +42,7 @@ def main() -> None:
     None
     """
     style_page(file_path=Path(__file__))
+    theme = st_theme()
 
     # read data
     df_regular, df_playoff = read_data()
@@ -63,16 +65,16 @@ def main() -> None:
                 df_regular.loc[df_regular.conference == conference].division.unique()
             ):
                 st.write(f"### {division}")
-                style_standings_df(df=df_regular.loc[df_regular.division == division])
+                style_standings_df(df=df_regular.loc[df_regular.division == division], theme=theme)
 
     with tab_conference:
         for conference in sorted(df_regular.conference.unique()):
             st.write(f"## {conference}")
-            style_standings_df(df=df_regular.loc[df_regular.conference == conference])
+            style_standings_df(df=df_regular.loc[df_regular.conference == conference], theme=theme)
 
     with tab_league:
         st.write("## League")
-        style_standings_df(df=df_regular)
+        style_standings_df(df=df_regular, theme=theme)
 
     with tab_playoff:
         create_playoff_tab_content(df=df_playoff)

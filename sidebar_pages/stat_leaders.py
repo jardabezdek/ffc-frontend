@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from st_files_connection import FilesConnection
+from streamlit_theme import st_theme
 
 from utils.style import style_leaders_df, style_page
 
@@ -52,6 +53,7 @@ def main() -> None:
     None
     """
     style_page(file_path=Path(__file__))
+    theme = st_theme()
 
     df = read_data()
     df = apply_filters(df=df)
@@ -60,16 +62,19 @@ def main() -> None:
         df=df.loc[df.position_code != "G"],
         header="Skaters",
         is_skaters_section=True,
+        theme=theme,
     )
     create_leaders_section(
         df=df.loc[df.position_code == "D"],
         header="Defensmen",
         is_skaters_section=True,
+        theme=theme,
     )
     create_leaders_section(
         df=df.loc[df.position_code == "G"],
         header="Goaltenders",
         is_skaters_section=False,
+        theme=theme,
     )
 
 
@@ -112,7 +117,12 @@ def apply_filters(df: pd.DataFrame, all_teams_option: str = "All teams") -> pd.D
     return df
 
 
-def create_leaders_section(df: pd.DataFrame, header: str, is_skaters_section: bool) -> None:
+def create_leaders_section(
+    df: pd.DataFrame,
+    header: str,
+    is_skaters_section: bool,
+    theme: dict,
+) -> None:
     # add skaters header
     st.header(header)
 
@@ -165,6 +175,7 @@ def create_leaders_section(df: pd.DataFrame, header: str, is_skaters_section: bo
                     df_sorted,
                     col_name=col_name,
                     section_name=header.lower(),
+                    theme=theme,
                     is_skaters_section=is_skaters_section,
                 )
 

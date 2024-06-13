@@ -54,13 +54,15 @@ def style_page(file_path: Path) -> None:
     st.write(f"# {page_icon} {page_title}")
 
 
-def style_standings_df(df: pd.DataFrame) -> None:
+def style_standings_df(df: pd.DataFrame, theme: dict) -> None:
     """Style standings data frame.
 
     Parameters:
     -----------
     df : pd.DataFrame
         Data frame with standings.
+    theme : dict
+        Dictionary containing theme metadata.
 
     Returns:
     --------
@@ -74,7 +76,7 @@ def style_standings_df(df: pd.DataFrame) -> None:
         data=(
             df.style
             # set background color of points column
-            .map(lambda _: "background-color: #f5f5f7;", subset=["points"])
+            .map(lambda _: get_highlighted_column_color(theme=theme), subset=["points"])
             # set text color of goals difference column
             .map(lambda x: "color: red;" if x < 0 else "color: green;", subset=["goals_diff"])
             # set precision of points pct column
@@ -91,6 +93,7 @@ def style_leaders_df(
     df: pd.DataFrame,
     col_name: str,
     section_name: str,
+    theme: dict,
     batch: int = 50,
     is_skaters_section: bool = True,
 ) -> None:
@@ -104,6 +107,8 @@ def style_leaders_df(
         The name of the column to be highlighted with a background color.
     section_name : str
         The name of the section.
+    theme : dict
+        Dictionary containing theme metadata.
     batch : int, optional
         The number of rows per page for pagination (default is 50).
     is_skaters_section : bool, optional
@@ -135,7 +140,7 @@ def style_leaders_df(
             # df
             pages[current_page - 1].style
             # set background color of stat column
-            .map(lambda _: "background-color: #f5f5f7;", subset=[col_name])
+            .map(lambda _: get_highlighted_column_color(theme=theme), subset=[col_name])
             # set precision of save pct column
             .format(precision=1, subset=["save_pct"])
             # set precision of gaa column
@@ -145,6 +150,30 @@ def style_leaders_df(
         column_config=column_config,
         use_container_width=True,
     )
+
+
+def get_highlighted_column_color(theme: dict) -> str:
+    """Return the background color for a highlighted column based on the provided theme.
+
+    Parameters
+    ----------
+    theme : dict
+        A dictionary containing theme metadata.
+
+    Returns
+    -------
+    str
+    """
+    if theme:
+        base = theme.get("base")
+
+        if base == "light":
+            return "background-color: #f5f5f7;"
+
+        if base == "dark":
+            return "background-color: #313131;"
+
+    return ""
 
 
 def add_rank_to_index(df: pd.DataFrame) -> pd.DataFrame:
