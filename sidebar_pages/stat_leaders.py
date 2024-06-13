@@ -95,6 +95,19 @@ def read_data() -> pd.DataFrame:
 
 
 def apply_filters(df: pd.DataFrame, all_teams_option: str = "All teams") -> pd.DataFrame:
+    """Apply interactive filters to a DataFrame using Streamlit widgets.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame to be filtered.
+    all_teams_option : str, optional
+        The label for the option to select all teams in the "Team" filter (default is "All teams").
+
+    Returns
+    -------
+    pd.DataFrame
+    """
     # create columns for filters
     filter_columns = st.columns(3)
 
@@ -123,6 +136,33 @@ def create_leaders_section(
     is_skaters_section: bool,
     theme: dict,
 ) -> None:
+    """Create and display a section for statistical leaders.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame containing the players' statistics.
+    header : str
+        The header title for the section.
+    is_skaters_section : bool
+        A flag indicating if the section is for skaters (True) or goalies (False).
+    theme : dict
+        A dictionary containing theme information for styling.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The function performs the following steps:
+    - Adds a header to the section.
+    - If displaying goalies and the number of goalies exceeds a threshold, adds a slider for
+      filtering by minimum games played.
+    - Creates tabs for different statistical categories.
+    - Sorts the DataFrame and displays player information within columns.
+    - Styles and paginates the DataFrame for the selected tab.
+    """
     # add skaters header
     st.header(header)
 
@@ -181,6 +221,12 @@ def create_leaders_section(
 
 
 def align_columns_to_center() -> st.markdown:
+    """Align the content of Streamlit columns to the center.
+
+    Returns
+    -------
+    st.markdown
+    """
     st.markdown(
         body="""
             <style>
@@ -194,6 +240,32 @@ def align_columns_to_center() -> st.markdown:
 
 
 def display_player_info(row: dict, col_name: str, tab_name: str, standing: int) -> None:
+    """Displays player information.
+
+    Parameters
+    ----------
+    row : dict
+        A dictionary containing the player's information.
+    col_name : str
+        The name of the column used to display the player's statistic.
+    tab_name : str
+        The name of the current tab displaying the player's information.
+    standing : int
+        The player's standing or rank, used to retrieve an emoji.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The function displays the following player information:
+    - Headshot image centered in the column.
+    - Player's full name with an emoji representing their standing.
+    - Player's team abbreviation, sweater number, and position code.
+    - The value of the player's statistic from the specified column.
+    - The name of the player's statistic.
+    """
     st.markdown(
         body=f"<img src='{row.headshot_url}' width='125' style='display: block; margin: 0 auto;'>",
         unsafe_allow_html=True,
