@@ -1,98 +1,15 @@
 """Utils funtion for stremlit app styling."""
 
+import math
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 import toml
 
+from utils.config import config
+
 PAGES_CONFIG_PATH = Path(__file__).resolve().parent.parent / ".streamlit" / "pages.toml"
-STANDDINGS_DF_COLUMN_CONFIG = {
-    "rank": st.column_config.NumberColumn(
-        label="Rank",
-        help="Rank",
-    ),
-    "team_logo_url": st.column_config.ImageColumn(
-        label="Team",
-        width="small",
-    ),
-    "team_full_name": st.column_config.TextColumn(
-        label=" ",
-        width="medium",
-    ),
-    "games_played": st.column_config.NumberColumn(
-        label="GP",
-        help="Games played",
-    ),
-    "wins": st.column_config.NumberColumn(
-        label="W",
-        help="Wins (worth two points)",
-    ),
-    "losses": st.column_config.NumberColumn(
-        label="L",
-        help="Losses (worth zero points)",
-    ),
-    "ots": st.column_config.NumberColumn(
-        label="OT",
-        help="OT/Shootout losses (worth one point)",
-    ),
-    "points": st.column_config.NumberColumn(
-        label="PTS",
-        help="Points",
-    ),
-    "points_pct": st.column_config.NumberColumn(
-        label="P%",
-        help="Points Percentage",
-    ),
-    "wins_reg": st.column_config.NumberColumn(
-        label="RW",
-        help="Regulation Wins",
-    ),
-    "wins_reg_ot": st.column_config.NumberColumn(
-        label="ROW",
-        help="Regulation plus Overtime Wins",
-    ),
-    "goals_for": st.column_config.NumberColumn(
-        label="GF",
-        help="Goals For",
-    ),
-    "goals_against": st.column_config.NumberColumn(
-        label="GA",
-        help="Goals Against",
-    ),
-    "goals_diff": st.column_config.NumberColumn(
-        label="DIFF",
-        help="Goal Differential",
-    ),
-    "record_home": st.column_config.TextColumn(
-        label="HOME",
-        help="Home Record",
-    ),
-    "record_away": st.column_config.TextColumn(
-        label="AWAY",
-        help="Away Record",
-    ),
-    "record_so": st.column_config.TextColumn(
-        label="S/O",
-        help="Record in games decided by Shootout",
-    ),
-    "record_last_10": st.column_config.TextColumn(
-        label="L10",
-        help="Record in last ten games",
-    ),
-}
-INTEGER_COLUMNS = [
-    "games_played",
-    "wins",
-    "losses",
-    "ots",
-    "points",
-    "wins_reg",
-    "wins_reg_ot",
-    "goals_for",
-    "goals_against",
-    "goals_diff",
-]
 
 
 def style_page(file_path: Path) -> None:
@@ -102,6 +19,10 @@ def style_page(file_path: Path) -> None:
     -----------
     file_path : Path
         The path to the file corresponding to the Streamlit page.
+
+    Returns:
+    --------
+    None
 
     Notes:
     ------
@@ -145,10 +66,8 @@ def style_standings_df(df: pd.DataFrame) -> None:
     --------
     None
     """
-    # add rank into index
-    df = df.reset_index(drop=True)
-    df["rank"] = df.index + 1
-    df = df.set_index(["rank"])
+    column_config = config.get("standings").get("columns")
+    df = add_rank_to_index(df=df)
 
     # style data
     st.dataframe(
@@ -159,12 +78,151 @@ def style_standings_df(df: pd.DataFrame) -> None:
             # set text color of goals difference column
             .map(lambda x: "color: red;" if x < 0 else "color: green;", subset=["goals_diff"])
             # set precision of points pct column
-            .format(precision=3, subset=["points_pct"])
-            # set precision of all integer columns
-            .format(precision=0, subset=INTEGER_COLUMNS)
+            .format(precision=1, subset=["points_pct"])
         ),
-        column_order=STANDDINGS_DF_COLUMN_CONFIG.keys(),
-        column_config=STANDDINGS_DF_COLUMN_CONFIG,
+        column_order=column_config.keys(),
+        column_config=column_config,
         # display dataframe in full (35 pixel is row height, 3 pixels is borders height)
         height=(len(df) + 1) * 35 + 3,
     )
+
+
+def style_leaders_df(
+    df: pd.DataFrame,
+    col_name: str,
+    section_name: str,
+    batch: int = 50,
+    is_skaters_section: bool = True,
+) -> None:
+    """Style and paginate a stat leaders data frame.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame containing the data to be styled and paginated.
+    col_name : str
+        The name of the column to be highlighted with a background color.
+    section_name : str
+        The name of the section.
+    batch : int, optional
+        The number of rows per page for pagination (default is 50).
+    is_skaters_section : bool, optional
+        A flag indicating if the section is for skaters or goalies (default is True).
+
+    Returns
+    -------
+    None
+    """
+    column_config = (
+        config.get("stat_leaders")
+        .get("skaters" if is_skaters_section else "goalies")
+        .get("columns")
+    )
+    df = add_rank_to_index(df=df)
+
+    # paginate data
+    pagination, current_page = paginate_df(
+        df=df,
+        batch=batch,
+        col_name=col_name,
+        section_name=section_name,
+    )
+    pages = split_df(df=df, batch=batch)
+
+    # style data
+    pagination.dataframe(
+        data=(
+            # df
+            pages[current_page - 1].style
+            # set background color of stat column
+            .map(lambda _: "background-color: #f5f5f7;", subset=[col_name])
+            # set precision of save pct column
+            .format(precision=1, subset=["save_pct"])
+            # set precision of gaa column
+            .format(precision=2, subset=["gaa"])
+        ),
+        column_order=column_config.keys(),
+        column_config=column_config,
+        use_container_width=True,
+    )
+
+
+def add_rank_to_index(df: pd.DataFrame) -> pd.DataFrame:
+    """Add a rank column to the DataFrame index, and set rank as an index.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The input DataFrame to which the rank index will be added.
+
+    Returns
+    -------
+    pd.DataFrame
+    """
+    return df.reset_index(drop=True).assign(rank=lambda x: x.index + 1).set_index(["rank"])
+
+
+def paginate_df(
+    df: pd.DataFrame,
+    batch: int,
+    col_name: str,
+    section_name: str,
+) -> tuple[st.container, int]:
+    """Paginate a data frame for display purposes and create a pagination interface.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame to paginate.
+    batch : int
+        The number of rows per page.
+    col_name : str
+        The name of the column used for pagination identification.
+    section_name : str
+        The name of the section used for pagination identification.
+
+    Returns
+    -------
+    tuple[st.container, int]
+    """
+    pagination = st.container()
+    bottom_menu = st.columns(5)
+
+    with bottom_menu[4]:
+        total_pages = math.ceil(len(df) / batch)
+        current_page = st.number_input(
+            label="Page",
+            min_value=1,
+            max_value=total_pages,
+            step=1,
+            key=f"current_page_{section_name}_{col_name}",
+            label_visibility="collapsed",
+        )
+    with bottom_menu[0]:
+        st.markdown(
+            body=(
+                """<p style="text-align:left;">"""
+                + f"Page <b>{current_page}</b> of <b>{total_pages}</b></p>"
+            ),
+            unsafe_allow_html=True,
+        )
+
+    return pagination, current_page
+
+
+@st.cache_data(show_spinner=False)
+def split_df(df: pd.DataFrame, batch: int) -> list:
+    """Split a data frame into a list of smaller data frames of a specified batch size.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame to split into batches.
+    batch : int
+        The number of rows per batch.
+
+    Returns
+    -------
+    list
+    """
+    return [df.loc[i : i + batch - 1, :] for i in range(0, len(df), batch)]
