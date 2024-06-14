@@ -138,13 +138,14 @@ def style_leaders_df(
     # style data
     pagination.dataframe(
         data=(
-            # df
             pages[current_page - 1].style
             # set background color of stat column
             .map(lambda _: get_highlighted_column_color(theme=theme), subset=[col_name])
-            # set precision of save pct column
-            .format(precision=1, subset=["save_pct"])
-            # set precision of gaa column
+            # set text color of +/- column
+            .map(lambda x: "color: red;" if x < 0 else "color: green;", subset=["plus_minus"])
+            # set precision to 1
+            .format(precision=1, subset=["save_pct", "shoot_pct"])
+            # set precision to 2
             .format(precision=2, subset=["gaa"])
         ),
         column_order=column_config.keys(),

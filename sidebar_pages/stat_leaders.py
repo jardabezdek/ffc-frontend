@@ -24,8 +24,28 @@ FILTER_NAME_TO_COL = {
 
 # define the tabs and corresponding stat column names
 TAB_TO_COL = {
-    "skaters": {"Points": "points", "Goals": "goals", "Assists": "assists"},
-    "goalies": {"GAA": "gaa", "Save %": "save_pct", "Shutouts": "shutouts"},
+    "skaters": {
+        "Points": "points",
+        "Goals": "goals",
+        "Assists": "assists",
+        "Plus-Minus": "plus_minus",
+        "Even Strength Points": "even_strength_points",
+        "Even Strength Goals": "even_strength_goals",
+        "Power Play Points": "power_play_points",
+        "Power Play Goals": "power_play_goals",
+        "Shorthanded Points": "shorthanded_points",
+        "Shorthanded Goals": "shorthanded_goals",
+        "Overtime Goals": "ot_goals",
+        "Game Winning Goals": "game_winning_goals",
+        "Shots": "shots",
+        "Shoot %": "shoot_pct",
+        "Penalty Minutes": "pim",
+    },
+    "goalies": {
+        "GAA": "gaa",
+        "Save %": "save_pct",
+        "Shutouts": "shutouts",
+    },
 }
 
 # define the standings and corresponding emoji

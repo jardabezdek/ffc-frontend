@@ -98,6 +98,10 @@ config = {
                     label="Team",
                     width="small",
                 ),
+                "position_code": st.column_config.TextColumn(
+                    label="Position",
+                    width="small",
+                ),
                 "games_played": st.column_config.NumberColumn(
                     label="GP",
                     help="Games Played",
@@ -105,7 +109,7 @@ config = {
                 "toi_minutes": st.column_config.NumberColumn(
                     label="TOI",
                     width="small",
-                    help="Time On Ice (in mins)",
+                    help="Time On Ice Minutes",
                 ),
                 "points": st.column_config.NumberColumn(
                     label="PTS",
@@ -118,6 +122,54 @@ config = {
                 "assists": st.column_config.NumberColumn(
                     label="A",
                     help="Assists",
+                ),
+                "plus_minus": st.column_config.NumberColumn(
+                    label="+/-",
+                    help="Plus-Minus",
+                ),
+                "even_strength_points": st.column_config.NumberColumn(
+                    label="ESP",
+                    help="Even Strength Points",
+                ),
+                "even_strength_goals": st.column_config.NumberColumn(
+                    label="ESG",
+                    help="Even Strength Goals",
+                ),
+                "power_play_points": st.column_config.NumberColumn(
+                    label="PPP",
+                    help="Power Play Points",
+                ),
+                "power_play_goals": st.column_config.NumberColumn(
+                    label="PPG",
+                    help="Power Play Goals",
+                ),
+                "shorthanded_points": st.column_config.NumberColumn(
+                    label="SHP",
+                    help="Shorthanded Points",
+                ),
+                "shorthanded_goals": st.column_config.NumberColumn(
+                    label="SHG",
+                    help="Shorthanded Goals",
+                ),
+                "ot_goals": st.column_config.NumberColumn(
+                    label="OTG",
+                    help="Overtime Goals",
+                ),
+                "game_winning_goals": st.column_config.NumberColumn(
+                    label="GWG",
+                    help="Game Winning Goals",
+                ),
+                "shots": st.column_config.NumberColumn(
+                    label="Shots",
+                    # help="Game Winning Goals",
+                ),
+                "shoot_pct": st.column_config.NumberColumn(
+                    label="Shoot %",
+                    help="Shooting Percentage",
+                ),
+                "pim": st.column_config.NumberColumn(
+                    label="PIM",
+                    help="Penalty Minutes",
                 ),
             },
         },
@@ -146,7 +198,7 @@ config = {
                 "toi_minutes": st.column_config.NumberColumn(
                     label="TOI",
                     width="small",
-                    help="Time On Ice (in mins)",
+                    help="Time On Ice Minutes",
                 ),
                 "gaa": st.column_config.NumberColumn(
                     label="GAA",
