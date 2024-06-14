@@ -6,7 +6,7 @@ days, including regular season and playoff data. It reads data from an S3 bucket
 to filter schedule by team, and presents the schedule in a user-friendly format.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 
@@ -76,6 +76,7 @@ def main() -> None:
     remove_whitespace_from_st_javascript()
 
 
+@st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)
 def read_data(user_timezone: str) -> tuple[pd.DataFrame]:
     """Read schedule data from an S3 bucket and preprocess it based on user timezone.
 

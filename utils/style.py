@@ -1,6 +1,7 @@
 """Utils funtion for stremlit app styling."""
 
 import math
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -239,7 +240,7 @@ def paginate_df(
     return pagination, current_page
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)
 def split_df(df: pd.DataFrame, batch: int) -> list:
     """Split a data frame into a list of smaller data frames of a specified batch size.
 

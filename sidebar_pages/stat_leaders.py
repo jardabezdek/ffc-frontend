@@ -2,6 +2,7 @@
 Frozen Facts Center - Stats page
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -78,7 +79,7 @@ def main() -> None:
     )
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)
 def read_data() -> pd.DataFrame:
     """Read stats from S3 storage.
 

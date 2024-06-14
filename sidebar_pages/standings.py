@@ -6,6 +6,7 @@ season and playoff data. It reads data from S3 storage, allows users to filter b
 displays standings organized by division, conference, league, and playoff tabs.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -80,6 +81,7 @@ def main() -> None:
         create_playoff_tab_content(df=df_playoff)
 
 
+@st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)
 def read_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     """Read standings data from S3 storage.
 
