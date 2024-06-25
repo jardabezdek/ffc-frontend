@@ -28,6 +28,8 @@ ALL_TEAMS_OPTION = "All teams"
 
 
 class TeamType(Enum):
+    """Team type class. Can be either `home`, or `away`."""
+
     HOME = "home"
     AWAY = "away"
 
@@ -49,31 +51,39 @@ def main() -> None:
     # read data
     df = read_data(user_timezone=user_timezone)
 
-    # get the list of the next days
-    schedule_days = pd.date_range(
-        start=datetime.now(tz=pytz.timezone(zone=user_timezone)).date(),
-        end=df["start_date_user_tz"].max(),
-        freq="D",
-    )
+    if not df.empty:
 
-    # write info message
-    st.write(
-        f"""
-        _In the current app version, scheduled games are displayed for only 
-        the next {len(schedule_days)} days._
-        """
-    )
+        # get the list of the next days
+        schedule_days = pd.date_range(
+            start=datetime.now(tz=pytz.timezone(zone=user_timezone)).date(),
+            end=df["start_date_user_tz"].max(),
+            freq="D",
+        )
 
-    # filter team
-    options = [ALL_TEAMS_OPTION] + sorted(set([*df.home_team_full_name, *df.away_team_full_name]))
-    filter_team = st.selectbox(label="Team", options=options, label_visibility="hidden")
-    if filter_team != ALL_TEAMS_OPTION:
-        df = df.loc[
-            (df.home_team_full_name == filter_team) | (df.away_team_full_name == filter_team)
-        ]
+        # write info message
+        st.write(
+            f"""
+            _In the current app version, scheduled games are displayed for only 
+            the next {len(schedule_days)} days._
+            """
+        )
 
-    display_schedule(df=df, schedule_days=schedule_days, filter_team=filter_team)
-    remove_whitespace_from_st_javascript()
+        # filter team
+        options = [ALL_TEAMS_OPTION] + sorted(
+            set([*df.home_team_full_name, *df.away_team_full_name])
+        )
+        filter_team = st.selectbox(label="Team", options=options, label_visibility="hidden")
+        if filter_team != ALL_TEAMS_OPTION:
+            df = df.loc[
+                (df.home_team_full_name == filter_team) | (df.away_team_full_name == filter_team)
+            ]
+
+        display_schedule(df=df, schedule_days=schedule_days, filter_team=filter_team)
+        remove_whitespace_from_st_javascript()
+
+    else:
+        # write info message
+        st.write("_No matches scheduled for the next 7 days._")
 
 
 @st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)
@@ -92,6 +102,9 @@ def read_data(user_timezone: str) -> tuple[pd.DataFrame]:
     """
     conn = st.connection("s3", type=FilesConnection)
     df = conn.read(path=DATA_PATH_SCHEDULE, input_format="parquet", ttl=600)
+
+    if df.start_time_utc.isna().all():
+        return pd.DataFrame()
 
     # convert game start times from UTC into user timezone
     for col_name, date_format in (
