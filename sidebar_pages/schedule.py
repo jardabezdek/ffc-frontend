@@ -11,10 +11,8 @@ from enum import Enum
 from pathlib import Path
 
 import pandas as pd
-import pytz
 import streamlit as st
 from st_files_connection import FilesConnection
-from streamlit_javascript import st_javascript
 
 from utils.style import style_page
 from utils.time import (
@@ -55,7 +53,7 @@ def main() -> None:
 
         # get the list of the next days
         schedule_days = pd.date_range(
-            start=datetime.now(tz=pytz.timezone(zone=user_timezone)).date(),
+            start=df["start_date_user_tz"].min(),
             end=df["start_date_user_tz"].max(),
             freq="D",
         )
@@ -64,7 +62,7 @@ def main() -> None:
         st.write(
             f"""
             _In the current app version, scheduled games are displayed for only 
-            the next {len(schedule_days)} days._
+            the next {len(schedule_days)} game days._
             """
         )
 
