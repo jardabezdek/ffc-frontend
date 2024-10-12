@@ -7,6 +7,7 @@ displays standings organized by division, conference, league, and playoff tabs.
 """
 
 from datetime import timedelta
+from enum import Enum
 from pathlib import Path
 
 import pandas as pd
@@ -18,12 +19,13 @@ from utils.style import style_page, style_standings_df
 
 DATA_PATH_STANDINGS_REGULAR = "frozen-facts-center-prod/fact_standings_regular.parquet"
 DATA_PATH_STANDINGS_PLAYOFF = "frozen-facts-center-prod/fact_standings_playoff.parquet"
-TAB_NAMES = [
-    "Division",
-    "Conference",
-    "League",
-    "Play-off",
-]
+
+
+class TabName(Enum):
+    DIVISION = "Division"
+    CONFERENCE = "Conference"
+    LEAGUE = "League"
+    PLAY_OFF = "Play-off"
 
 
 def main() -> None:
@@ -49,22 +51,25 @@ def main() -> None:
     df_regular, df_playoff = read_data()
 
     # filter season
-    filter_season = st.selectbox(
-        label="Season", options=df_regular.season_long.unique(), label_visibility="hidden"
-    )
+    filter_season = st.selectbox(label="Season", options=df_regular.season_long.unique(), label_visibility="hidden")
     df_regular = df_regular.loc[df_regular.season_long == filter_season]
     df_playoff = df_playoff.loc[df_playoff.season_long == filter_season]
 
     # create tabs
-    tab_division, tab_conference, tab_league, tab_playoff = st.tabs(tabs=TAB_NAMES)
+    tabs = [TabName.DIVISION.value, TabName.CONFERENCE.value, TabName.DIVISION.value]
+
+    if df_playoff.empty:
+        tab_division, tab_conference, tab_league = st.tabs(tabs=tabs)
+        tab_playoff = None
+    else:
+        tabs.append(TabName.PLAY_OFF.value)
+        tab_division, tab_conference, tab_league, tab_playoff = st.tabs(tabs=tabs)
 
     with tab_division:
         for conference in sorted(df_regular.conference.unique()):
             st.write(f"## {conference}")
 
-            for division in sorted(
-                df_regular.loc[df_regular.conference == conference].division.unique()
-            ):
+            for division in sorted(df_regular.loc[df_regular.conference == conference].division.unique()):
                 st.write(f"### {division}")
                 style_standings_df(df=df_regular.loc[df_regular.division == division], theme=theme)
 
@@ -77,8 +82,9 @@ def main() -> None:
         st.write("## League")
         style_standings_df(df=df_regular, theme=theme)
 
-    with tab_playoff:
-        create_playoff_tab_content(df=df_playoff)
+    if tab_playoff:
+        with tab_playoff:
+            create_playoff_tab_content(df=df_playoff)
 
 
 @st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)
