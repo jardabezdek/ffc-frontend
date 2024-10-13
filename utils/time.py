@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-import pandas as pd
 import pytz
 import streamlit as st
 from streamlit_javascript import st_javascript
@@ -24,7 +23,7 @@ def get_user_timezone() -> str:
     return "Europe/Prague"
 
 
-def convert_utc_to_user_timezone(date_utc: str, user_timezone: str, date_format: str):
+def convert_utc_to_user_timezone(date_utc: str, user_timezone: str, date_format: str) -> str:
     """Convert a UTC time string to the user's timezone and return the formatted date.
 
     This function takes a UTC time string, the user's timezone, and a date format. It parses the
@@ -49,6 +48,23 @@ def convert_utc_to_user_timezone(date_utc: str, user_timezone: str, date_format:
         .astimezone(pytz.timezone(zone=user_timezone))
         .strftime(date_format)
     )
+
+
+def get_current_user_datetime(user_timezone: str, date_format: str = "%Y-%m-%d %H:%M") -> str:
+    """Get the current date and time in a specified user's timezone, formatted as a string.
+
+    Parameters
+    ----------
+    user_timezone : str
+        The timezone of the user, specified as a string that is compatible with the `pytz` library.
+    date_format : str, optional
+        The format in which to return the date and time, by default "%Y-%m-%d %H:%M".
+
+    Returns
+    -------
+    str
+    """
+    return datetime.now().astimezone(pytz.timezone(user_timezone)).strftime(date_format)
 
 
 def remove_whitespace_from_st_javascript() -> None:

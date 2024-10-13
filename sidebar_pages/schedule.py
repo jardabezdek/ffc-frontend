@@ -6,7 +6,7 @@ days, including regular season and playoff data. It reads data from an S3 bucket
 to filter schedule by team, and presents the schedule in a user-friendly format.
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from enum import Enum
 from pathlib import Path
 
@@ -17,6 +17,7 @@ from st_files_connection import FilesConnection
 from utils.style import style_page
 from utils.time import (
     convert_utc_to_user_timezone,
+    get_current_user_datetime,
     get_user_timezone,
     remove_whitespace_from_st_javascript,
 )
@@ -108,6 +109,7 @@ def read_data(user_timezone: str) -> tuple[pd.DataFrame]:
     for col_name, date_format in (
         ("start_date_user_tz", "%Y-%m-%d"),
         ("start_time_user_tz", "%H:%M"),
+        ("start_datetime_user_tz", "%Y-%m-%d %H:%M"),
     ):
         df[col_name] = df.start_time_utc.apply(
             lambda date_utc: convert_utc_to_user_timezone(
@@ -116,6 +118,10 @@ def read_data(user_timezone: str) -> tuple[pd.DataFrame]:
                 date_format=date_format,
             )
         )
+
+    # filter out matches that started before the current user datetime (postponed matches)
+    current_user_datetime = get_current_user_datetime(user_timezone=user_timezone)
+    df = df[df["start_datetime_user_tz"] >= current_user_datetime]
 
     # sort data frame by user timezone date and time
     df = df.sort_values(
