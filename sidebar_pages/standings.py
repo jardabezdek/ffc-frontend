@@ -56,7 +56,7 @@ def main() -> None:
     df_playoff = df_playoff.loc[df_playoff.season_long == filter_season]
 
     # create tabs
-    tabs = [TabName.DIVISION.value, TabName.CONFERENCE.value, TabName.DIVISION.value]
+    tabs = [TabName.DIVISION.value, TabName.CONFERENCE.value, TabName.LEAGUE.value]
 
     if df_playoff.empty:
         tab_division, tab_conference, tab_league = st.tabs(tabs=tabs)
