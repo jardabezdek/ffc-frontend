@@ -2,6 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 from st_pages import show_pages_from_config
+
 from utils.style import style_page
 
 style_page(file_path=Path(__file__))
@@ -21,7 +22,7 @@ st.write(
     retrospectives, we're here to break down the game using the power of analytics. Our goal is 
     to fuel your passion for hockey by providing comprehensive analyses and compelling 
     visualizations that bring the numbers to life.
-    
+
     Join us in exploring the dynamic world of hockey through a data-driven lens. Get ready 
     to witness the game in a whole new light with Frozen Facts Center - where numbers meet the ice!
     """
