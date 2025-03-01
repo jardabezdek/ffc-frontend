@@ -18,11 +18,9 @@ is used. To start it, please, follow the next steps.
 
 ### :envelope: Deployment
 
-The following is written in [the official streamlit docs](https://docs.streamlit.io/streamlit-community-cloud/manage-your-app#manage-your-app-in-github):
+The application is deployed to AWS EC2 instance using GitHub Actions.
 
-> Your GitHub repository is the source for the app, so that means that any time you push an update
-> to your repo you'll see it reflected in the app in almost real time. Try it out!
->
-> Streamlit also smartly detects whether you touched your dependencies, in which case it will
-> automatically do a full redeploy for you—which will take a little more time. But since most
-> updates don't involve dependency changes, you should usually see your app update in real time.
+The following steps are required to deploy the application:
+
+1. Push the changes to the `main` branch.
+1. That's it! You are done!
