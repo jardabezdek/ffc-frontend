@@ -10,6 +10,7 @@ import streamlit as st
 from st_files_connection import FilesConnection
 from streamlit_theme import st_theme
 
+from utils.columns import get_tab_config
 from utils.style import style_leaders_df, style_page
 
 # define the data path
@@ -22,41 +23,12 @@ FILTER_NAME_TO_COL = {
     "Team": "team_full_name",
 }
 
-# define the tabs and corresponding stat column names
-TAB_TO_COL = {
-    "skaters": {
-        "Points": "points",
-        "Goals": "goals",
-        "Assists": "assists",
-        "Plus-Minus": "plus_minus",
-        "Even Strength Points": "even_strength_points",
-        "Even Strength Goals": "even_strength_goals",
-        "Power Play Points": "power_play_points",
-        "Power Play Goals": "power_play_goals",
-        "Shorthanded Points": "shorthanded_points",
-        "Shorthanded Goals": "shorthanded_goals",
-        "Overtime Goals": "ot_goals",
-        "Game Winning Goals": "game_winning_goals",
-        "Shots": "shots",
-        "Shoot %": "shoot_pct",
-        "Penalty Minutes": "pim",
-    },
-    "goalies": {
-        "GAA": "gaa",
-        "Save %": "save_pct",
-        "Shutouts": "shutouts",
-    },
-}
-
 # define the standings and corresponding emoji
 STANDING_TO_EMOJI = {
     1: "🥇",
     2: "🥈",
     3: "🥉",
 }
-
-# define columns that need to be sorted ascending
-ASCENDING_COLS = ["gaa"]
 
 # define (probably) the highest number of goalies per team per season
 MAX_GOALIES_PER_TEAM = 3
@@ -184,7 +156,7 @@ def create_leaders_section(
     - Sorts the DataFrame and displays player information within columns.
     - Styles and paginates the DataFrame for the selected tab.
     """
-    # add skaters header
+    # add header
     st.header(header)
 
     # add min games slider (if comparing all teams stats)
@@ -206,16 +178,17 @@ def create_leaders_section(
             df = df.loc[df.games_played >= min_games_played]
 
     # create tabs
-    tab_to_col = TAB_TO_COL["skaters"] if is_skaters_section else TAB_TO_COL["goalies"]
-    tabs = st.tabs(tabs=tab_to_col.keys())
+    tab_configs = get_tab_config(page="stat_leaders", section="skaters" if is_skaters_section else "goalies")
+    tabs = st.tabs(tabs=[c.st_table_config.label for c in tab_configs])
 
     # iterate over tabs and create content
-    for (tab_name, col_name), tab in zip(tab_to_col.items(), tabs):
+    for tab_config, tab in zip(tab_configs, tabs):
+        col_name = tab_config.name
 
         with tab:
             df_sorted = df.sort_values(
                 by=[col_name, "games_played", "toi_minutes"],
-                ascending=[col_name in ASCENDING_COLS, True, True],
+                ascending=[tab_config.is_sorted_ascending, True, True],
             )
 
             col1, col2, col3 = st.columns(3)
@@ -227,7 +200,7 @@ def create_leaders_section(
                         display_player_info(
                             row=df_sorted.iloc[idx],
                             col_name=col_name,
-                            tab_name=tab_name,
+                            stat_description=tab_config.st_table_config.help,
                             standing=idx + 1,
                         )
 
@@ -260,7 +233,7 @@ def align_columns_to_center() -> st.markdown:
     )
 
 
-def display_player_info(row: dict, col_name: str, tab_name: str, standing: int) -> None:
+def display_player_info(row: dict, col_name: str, stat_description: str, standing: int) -> None:
     """Displays player information.
 
     Parameters
@@ -269,8 +242,8 @@ def display_player_info(row: dict, col_name: str, tab_name: str, standing: int) 
         A dictionary containing the player's information.
     col_name : str
         The name of the column used to display the player's statistic.
-    tab_name : str
-        The name of the current tab displaying the player's information.
+    stat_description : str
+        The description of the player's statistic.
     standing : int
         The player's standing or rank, used to retrieve an emoji.
 
@@ -298,7 +271,7 @@ def display_player_info(row: dict, col_name: str, tab_name: str, standing: int) 
         unsafe_allow_html=True,
     )
     st.write(f"# {row[col_name]}")
-    st.write(tab_name)
+    st.write(stat_description)
 
 
 if __name__ == "__main__":

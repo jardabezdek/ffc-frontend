@@ -8,7 +8,7 @@ import pandas as pd
 import streamlit as st
 import toml
 
-from utils.config import config
+from utils.columns import get_column_config, get_precision_config
 
 PAGES_CONFIG_PATH = Path(__file__).resolve().parent.parent / ".streamlit" / "pages.toml"
 
@@ -35,9 +35,7 @@ def style_page(file_path: Path) -> None:
     """
     # load page config
     page_config = next(
-        item
-        for item in toml.load(PAGES_CONFIG_PATH).get("pages")
-        if file_path.as_posix().endswith(item.get("path"))
+        item for item in toml.load(PAGES_CONFIG_PATH).get("pages") if file_path.as_posix().endswith(item.get("path"))
     )
 
     # configure page
@@ -69,7 +67,9 @@ def style_standings_df(df: pd.DataFrame, theme: dict) -> None:
     --------
     None
     """
-    column_config = config.get("standings").get("columns")
+    column_config = get_column_config(page="standings", section="standings")
+    precision_config = get_precision_config(page="standings", section="standings")
+
     df = add_rank_to_index(df=df)
 
     # style data
@@ -80,8 +80,10 @@ def style_standings_df(df: pd.DataFrame, theme: dict) -> None:
             .map(lambda _: get_highlighted_column_color(theme=theme), subset=["points"])
             # set text color of goals difference column
             .map(lambda x: "color: red;" if x < 0 else "color: green;", subset=["goals_diff"])
-            # set precision of points pct column
-            .format(precision=1, subset=["points_pct"])
+            # set precision
+            .format(precision=1, subset=precision_config[1])
+            .format(precision=2, subset=precision_config[2])
+            .format(precision=3, subset=precision_config[3])
         ),
         column_order=column_config.keys(),
         column_config=column_config,
@@ -119,11 +121,10 @@ def style_leaders_df(
     -------
     None
     """
-    column_config = (
-        config.get("stat_leaders")
-        .get("skaters" if is_skaters_section else "goalies")
-        .get("columns")
-    )
+    section = "skaters" if is_skaters_section else "goalies"
+    column_config = get_column_config(page="stat_leaders", section=section)
+    precision_config = get_precision_config(page="stat_leaders", section=section)
+
     df = add_rank_to_index(df=df)
 
     # paginate data
@@ -138,15 +139,16 @@ def style_leaders_df(
     # style data
     pagination.dataframe(
         data=(
-            pages[current_page - 1].style
+            pages[current_page - 1]
+            .style
             # set background color of stat column
             .map(lambda _: get_highlighted_column_color(theme=theme), subset=[col_name])
             # set text color of +/- column
             .map(lambda x: "color: red;" if x < 0 else "color: green;", subset=["plus_minus"])
-            # set precision to 1
-            .format(precision=1, subset=["save_pct", "shoot_pct"])
-            # set precision to 2
-            .format(precision=2, subset=["gaa"])
+            # set precision
+            .format(precision=1, subset=precision_config[1])
+            .format(precision=2, subset=precision_config[2])
+            .format(precision=3, subset=precision_config[3])
         ),
         column_order=column_config.keys(),
         column_config=column_config,
@@ -231,10 +233,7 @@ def paginate_df(
         )
     with bottom_menu[0]:
         st.markdown(
-            body=(
-                """<p style="text-align:left;">"""
-                + f"Page <b>{current_page}</b> of <b>{total_pages}</b></p>"
-            ),
+            body=(f"""<p style="text-align:left;"> Page <b>{current_page}</b> of <b>{total_pages}</b></p>"""),
             unsafe_allow_html=True,
         )
 
