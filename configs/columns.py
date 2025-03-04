@@ -354,6 +354,26 @@ config = {
                 precision=1,
             ),
             ColumnConfig(
+                name="xg",
+                is_tab=True,
+                st_table_config=StTableColumnConfig(
+                    fn=st.column_config.NumberColumn,
+                    label="xG",
+                    help="Expected Goals",
+                ),
+                precision=1,
+            ),
+            ColumnConfig(
+                name="goals_above_expected",
+                is_tab=True,
+                st_table_config=StTableColumnConfig(
+                    fn=st.column_config.NumberColumn,
+                    label="SGAxG",
+                    help="Scored Goals Above Expected",
+                ),
+                precision=1,
+            ),
+            ColumnConfig(
                 name="pim",
                 is_tab=True,
                 st_table_config=StTableColumnConfig(
@@ -465,7 +485,7 @@ config = {
                 is_tab=True,
                 st_table_config=StTableColumnConfig(
                     fn=st.column_config.NumberColumn,
-                    label="SGAE",
+                    label="SGAxG",
                     help="Saved Goals Above Expected",
                 ),
                 precision=1,
