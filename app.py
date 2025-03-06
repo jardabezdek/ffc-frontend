@@ -10,21 +10,26 @@ show_pages_from_config()
 
 st.write(
     """
-    ##### Welcome to Frozen Facts Center, your ultimate destination for all things data \
-    and analytics in the thrilling world of ice hockey!
-    
-    Step onto the ice with us as we delve deep into the numbers, uncovering insights, trends, 
-    and stories that go beyond the game's surface. Whether you're a die-hard fan, a seasoned 
-    analyst, or someone just starting to explore the fascinating intersection of data and sports, 
-    this platform is your gateway to unlocking the hidden narratives within the rink.
-    
-    From player performance metrics to team strategies, game-changing trends to historical data 
-    retrospectives, we're here to break down the game using the power of analytics. Our goal is 
-    to fuel your passion for hockey by providing comprehensive analyses and compelling 
-    visualizations that bring the numbers to life.
+    Welcome to **Frozen Facts Center**, a hub for NHL stats, standings, and analytics. 
 
-    Join us in exploring the dynamic world of hockey through a data-driven lens. Get ready 
-    to witness the game in a whole new light with Frozen Facts Center - where numbers meet the ice!
+    #### 🔎 What You'll Find Here
+    
+    ✅ **Standings:** Stay up to date with team rankings across the league, conferences, and divisions. \\
+    ✅ **Scores:** Get results from recently played games. \\
+    ✅ **Schedule:** Don't miss a game—check out upcoming matchups. \\
+    ✅ **Stat Leaders:** Dive deep into player stats, from goals and assists to advanced metrics like xG.
+
+    #### 📊 Built for Data Enthusiasts by Data Enthusiast
+    
+    Frozen Facts Center isn't just about stats — it's also a showcase of the tech stack I love to use. 
+    The infrastructure is hosted on AWS, built with AWS CDK for infrastructure as code. The data pipelines
+    are powered by duckdb and dbt, and the web app itself runs on the one and only Streamlit.
+
+    The code is open source! You can check out the repositories here:
+    [backend](https://github.com/jardabezdek/ffc-backend) & [frontend](https://github.com/jardabezdek/ffc-frontend).
+
+    #### 🚀 Start Exploring Now!
+    Click through the sections on the left and uncover the numbers that define the game!
     """
 )
 
