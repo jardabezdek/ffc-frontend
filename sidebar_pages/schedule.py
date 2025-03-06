@@ -14,7 +14,7 @@ import pandas as pd
 import streamlit as st
 from st_files_connection import FilesConnection
 
-from utils.style import style_page
+from utils.style import add_footer, style_page
 from utils.time import (
     convert_utc_to_user_timezone,
     get_current_user_datetime,
@@ -68,14 +68,10 @@ def main() -> None:
         )
 
         # filter team
-        options = [ALL_TEAMS_OPTION] + sorted(
-            set([*df.home_team_full_name, *df.away_team_full_name])
-        )
+        options = [ALL_TEAMS_OPTION] + sorted(set([*df.home_team_full_name, *df.away_team_full_name]))
         filter_team = st.selectbox(label="Team", options=options, label_visibility="hidden")
         if filter_team != ALL_TEAMS_OPTION:
-            df = df.loc[
-                (df.home_team_full_name == filter_team) | (df.away_team_full_name == filter_team)
-            ]
+            df = df.loc[(df.home_team_full_name == filter_team) | (df.away_team_full_name == filter_team)]
 
         display_schedule(df=df, schedule_days=schedule_days, filter_team=filter_team)
         remove_whitespace_from_st_javascript()
@@ -83,6 +79,8 @@ def main() -> None:
     else:
         # write info message
         st.write("_No matches scheduled for the next 7 days._")
+
+    add_footer()
 
 
 @st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)
@@ -124,9 +122,7 @@ def read_data(user_timezone: str) -> tuple[pd.DataFrame]:
     df = df[df["start_datetime_user_tz"] >= current_user_datetime]
 
     # sort data frame by user timezone date and time
-    df = df.sort_values(
-        by=["start_date_user_tz", "start_time_user_tz"], ascending=[False, True]
-    ).reset_index(drop=True)
+    df = df.sort_values(by=["start_date_user_tz", "start_time_user_tz"], ascending=[False, True]).reset_index(drop=True)
 
     return df
 

@@ -3,7 +3,7 @@ from pathlib import Path
 import streamlit as st
 from st_pages import show_pages_from_config
 
-from utils.style import style_page
+from utils.style import add_footer, style_page
 
 style_page(file_path=Path(__file__))
 show_pages_from_config()
@@ -27,3 +27,5 @@ st.write(
     to witness the game in a whole new light with Frozen Facts Center - where numbers meet the ice!
     """
 )
+
+add_footer()

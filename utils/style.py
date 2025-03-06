@@ -256,3 +256,18 @@ def split_df(df: pd.DataFrame, batch: int) -> list:
     list
     """
     return [df.loc[i : i + batch - 1, :] for i in range(0, len(df), batch)]
+
+
+def add_footer() -> str:
+    """Add a footer to the page.
+
+    Returns
+    -------
+    str
+    """
+    st.write(
+        """
+        ---
+        Built with ❤️ by [Jaroslav Bezdek](https://jaroslavbezdek.com)
+        """
+    )

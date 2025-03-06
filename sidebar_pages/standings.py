@@ -15,7 +15,7 @@ import streamlit as st
 from st_files_connection import FilesConnection
 from streamlit_theme import st_theme
 
-from utils.style import style_page, style_standings_df
+from utils.style import add_footer, style_page, style_standings_df
 
 DATA_PATH_STANDINGS_REGULAR = "frozen-facts-center-prod/fact_standings_regular.parquet"
 DATA_PATH_STANDINGS_PLAYOFF = "frozen-facts-center-prod/fact_standings_playoff.parquet"
@@ -85,6 +85,8 @@ def main() -> None:
     if tab_playoff:
         with tab_playoff:
             create_playoff_tab_content(df=df_playoff)
+
+    add_footer()
 
 
 @st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)

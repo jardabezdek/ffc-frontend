@@ -11,7 +11,7 @@ from st_files_connection import FilesConnection
 from streamlit_theme import st_theme
 
 from utils.columns import get_tab_config
-from utils.style import style_leaders_df, style_page
+from utils.style import add_footer, style_leaders_df, style_page
 
 # define the data path
 DATA_PATH_SKATER_STATS = "frozen-facts-center-prod/fact_stats.parquet"
@@ -69,6 +69,7 @@ def main() -> None:
         is_skaters_section=False,
         theme=theme,
     )
+    add_footer()
 
 
 @st.cache_data(ttl=timedelta(minutes=10), show_spinner=False)

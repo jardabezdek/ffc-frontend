@@ -14,7 +14,7 @@ import pandas as pd
 import streamlit as st
 from st_files_connection import FilesConnection
 
-from utils.style import style_page
+from utils.style import add_footer, style_page
 from utils.time import (
     convert_utc_to_user_timezone,
     get_user_timezone,
@@ -63,11 +63,10 @@ def main() -> None:
     filter_team = st.selectbox(label="Team", options=options, label_visibility="hidden")
 
     if filter_team != ALL_TEAMS_OPTION:
-        df = df.loc[
-            (df.home_team_full_name == filter_team) | (df.away_team_full_name == filter_team)
-        ]
+        df = df.loc[(df.home_team_full_name == filter_team) | (df.away_team_full_name == filter_team)]
 
     display_scores(df=df)
+    add_footer()
     remove_whitespace_from_st_javascript()
 
 
@@ -101,9 +100,7 @@ def read_data(user_timezone: str) -> tuple[pd.DataFrame]:
         )
 
     # sort data frame by user timezone date and time
-    df = df.sort_values(
-        by=["start_date_user_tz", "start_time_user_tz"], ascending=[False, True]
-    ).reset_index(drop=True)
+    df = df.sort_values(by=["start_date_user_tz", "start_time_user_tz"], ascending=[False, True]).reset_index(drop=True)
 
     return df
 
@@ -150,17 +147,13 @@ def display_scores(df: pd.DataFrame) -> None:
                 st.markdown(body=row.period_type)
 
             with col2:
-                display_team_name_and_logo(
-                    row=row, team_type=TeamType.HOME.value, did_home_team_win=did_home_team_win
-                )
+                display_team_name_and_logo(row=row, team_type=TeamType.HOME.value, did_home_team_win=did_home_team_win)
 
             with col3:
                 st.markdown(body=f"**{row.home_team_score}-{row.away_team_score}**")
 
             with col4:
-                display_team_name_and_logo(
-                    row=row, team_type=TeamType.AWAY.value, did_home_team_win=did_home_team_win
-                )
+                display_team_name_and_logo(row=row, team_type=TeamType.AWAY.value, did_home_team_win=did_home_team_win)
 
         st.markdown("####")
 
