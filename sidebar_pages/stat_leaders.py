@@ -10,6 +10,7 @@ import streamlit as st
 from st_files_connection import FilesConnection
 from streamlit_theme import st_theme
 
+from models.columns import ColumnConfig
 from utils.columns import get_tab_config
 from utils.style import add_footer, style_leaders_df, style_page
 
@@ -190,7 +191,7 @@ def create_leaders_section(
             df_sorted = df.sort_values(
                 by=[col_name, "games_played", "toi_minutes"],
                 ascending=[tab_config.is_sorted_ascending, True, True],
-            )
+            ).reset_index(drop=True)
 
             col1, col2, col3 = st.columns(3)
             align_columns_to_center()
@@ -199,9 +200,9 @@ def create_leaders_section(
                 if idx + 1 <= len(df_sorted):
                     with col:
                         display_player_info(
-                            row=df_sorted.iloc[idx],
+                            row=df_sorted.loc[idx],
                             col_name=col_name,
-                            stat_description=tab_config.st_table_config.help,
+                            col_config=tab_config,
                             standing=idx + 1,
                         )
 
@@ -234,7 +235,7 @@ def align_columns_to_center() -> st.markdown:
     )
 
 
-def display_player_info(row: dict, col_name: str, stat_description: str, standing: int) -> None:
+def display_player_info(row: dict, col_name: str, col_config: ColumnConfig, standing: int) -> None:
     """Displays player information.
 
     Parameters
@@ -243,8 +244,8 @@ def display_player_info(row: dict, col_name: str, stat_description: str, standin
         A dictionary containing the player's information.
     col_name : str
         The name of the column used to display the player's statistic.
-    stat_description : str
-        The description of the player's statistic.
+    col_config : ColumnConfig
+        The configuration for the column used to display the player's statistic.
     standing : int
         The player's standing or rank, used to retrieve an emoji.
 
@@ -271,8 +272,10 @@ def display_player_info(row: dict, col_name: str, stat_description: str, standin
         body=f"{row.team_abbrev_name} &#8226; #{row.sweater_number} &#8226; {row.position_code}",
         unsafe_allow_html=True,
     )
-    st.write(f"# {row[col_name]}")
-    st.write(stat_description)
+
+    value = f"# {row[col_name]}" if col_config.precision is None else f"# {row[col_name]:.{col_config.precision}f}"
+    st.write(value)
+    st.write(col_config.st_table_config.help)
 
 
 if __name__ == "__main__":
